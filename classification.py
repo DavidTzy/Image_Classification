@@ -270,13 +270,8 @@ train_gen = BsonGenerator(train_bson_file, train_images_df, train_offsets_df,
                          batch_size=batch_size, shuffle=True)
 
 
-val_datagen = ImageDataGenerator(preprocessing_function=keras.applications.xception.preprocess_input,
-                                 shear_range=0.2,
-                                zoom_range=0.1,
-                                rotation_range=180.,
-                                width_shift_range=0.2,
-                                height_shift_range=0.2,
-                                horizontal_flip=True)
+val_datagen = ImageDataGenerator(preprocessing_function=keras.applications.xception.preprocess_input
+                                 )
 
 
 val_gen = BsonGenerator(train_bson_file, val_images_df, train_offsets_df,
@@ -414,13 +409,7 @@ train_gen = BsonGenerator(train_bson_file, train_images_df, train_offsets_df,
                          batch_size=batch_size, shuffle=True)
 
 
-val_datagen = ImageDataGenerator(preprocessing_function=keras.applications.inception_v3.preprocess_input,
-                                 shear_range=0.2,
-                                zoom_range=0.1,
-                                rotation_range=180.,
-                                width_shift_range=0.2,
-                                height_shift_range=0.2,
-                                horizontal_flip=True)
+val_datagen = ImageDataGenerator(preprocessing_function=keras.applications.inception_v3.preprocess_input)
 
 
 val_gen = BsonGenerator(train_bson_file, val_images_df, train_offsets_df,
@@ -536,13 +525,7 @@ train_gen = BsonGenerator(train_bson_file, train_images_df, train_offsets_df,
                          batch_size=batch_size, shuffle=True)
 
 
-val_datagen = ImageDataGenerator(preprocessing_function=keras.applications.resnet50.preprocess_input,
-                                 shear_range=0.2,
-                                zoom_range=0.1,
-                                rotation_range=180.,
-                                width_shift_range=0.2,
-                                height_shift_range=0.2,
-                                horizontal_flip=True)
+val_datagen = ImageDataGenerator(preprocessing_function=keras.applications.resnet50.preprocess_input)
 
 
 val_gen = BsonGenerator(train_bson_file, val_images_df, train_offsets_df,
