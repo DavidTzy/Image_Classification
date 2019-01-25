@@ -270,8 +270,7 @@ train_gen = BsonGenerator(train_bson_file, train_images_df, train_offsets_df,
                          batch_size=batch_size, shuffle=True)
 
 
-val_datagen = ImageDataGenerator(preprocessing_function=keras.applications.xception.preprocess_input
-                                 )
+val_datagen = ImageDataGenerator(preprocessing_function=keras.applications.xception.preprocess_input)
 
 
 val_gen = BsonGenerator(train_bson_file, val_images_df, train_offsets_df,
