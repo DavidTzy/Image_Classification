@@ -49,8 +49,7 @@ test_path = os.path.join(input_path, "test.bson")
 categories_path = os.path.join(input_path,'category_names.csv')
 categories_df = pd.read_csv(categories_path, index_col="category_id")
  
-# Maps the category_id to an integer index. This is what we'll use to
-# one-hot encode the labels.
+# Maps the category_id to an integer index.
 
 def make_category_tables():
     cat2idx = {}
@@ -112,7 +111,7 @@ def read_bson(bson_path, num_records, with_categories):
 train_offsets_df = read_bson(train_path, num_records=num_train_products, with_categories=True)
 
 
-def make_val_set(df,max_num = 6000,threshold = 200,split_percentage=0.2, drop_percentage=0.5):
+def make_val_set(df,max_num = 10000,threshold = 200,split_percentage=0.2, drop_percentage=0.5):
     '''max_num: the maximum number of product to keep for each category
        threshold: if the number of images of one category is below this threshold, we will do 
        some data augmentation for this category.   
@@ -154,7 +153,7 @@ def make_val_set(df,max_num = 6000,threshold = 200,split_percentage=0.2, drop_pe
             else:
                 val_ids = []
 
-            # Create a new row for each image.
+            # New row is created for each image.
             for product_id in product_ids:
                 row = [product_id, category_idx]
                 for img_idx in range(df.loc[product_id, "num_imgs"]):
@@ -208,7 +207,6 @@ class BsonGenerator(Iterator):
             batch_y = np.zeros((len(batch_x), self.num_class), dtype=K.floatx())
 
         for i, j in enumerate(index_array):
-            # Protect file and dataframe access with a lock.
             with self.lock:
                 image_row = self.images_df.iloc[j]
                 product_id = image_row["product_id"]
@@ -217,21 +215,20 @@ class BsonGenerator(Iterator):
                 # Read this product's data from the BSON file.
                 self.file.seek(offset_row["offset"])
                 item_data = self.file.read(offset_row["length"])
-
-            # Grab the image from the product.
+                
             item = bson.BSON.decode(item_data)
             img_idx = image_row["img_idx"]
             bson_img = item["imgs"][img_idx]["picture"]
 
-            # Load the image.
+            # Load image.
             img = load_img(io.BytesIO(bson_img), target_size=self.target_size)
 
-            # Preprocess the image.
+            # Preprocess image.
             x = img_to_array(img)
             x = self.image_data_generator.random_transform(x)
             x = self.image_data_generator.standardize(x)
 
-            # Add the image and the label to the batch (one-hot encoded).
+            # Add one-hot encoded label.
             batch_x[i] = x
             if self.with_labels:
                 batch_y[i, image_row["category_idx"]] = 1
@@ -256,13 +253,12 @@ lock = threading.Lock()
 num_train_images = len(train_images_df)
 num_val_images = len(val_images_df)
 batch_size = 128
-# Tip: use ImageDataGenerator for data augmentation and preprocessing.
+
 train_datagen = ImageDataGenerator(preprocessing_function=keras.applications.xception.preprocess_input,
-                                   shear_range=0.2,
-                                   zoom_range=0.1,
                                    rotation_range=180.,
-                                   width_shift_range=0.2,
+                                   zoom_range=0.1,
                                    height_shift_range=0.2,
+                                   width_shift_range=0.1,
                                    horizontal_flip=True)
 
 train_gen = BsonGenerator(train_bson_file, train_images_df, train_offsets_df, 
@@ -278,7 +274,7 @@ val_gen = BsonGenerator(train_bson_file, val_images_df, train_offsets_df,
                        batch_size=batch_size, shuffle=True)
 
 
-last_set_layer = 96  # value is based on based model selected.
+last_set_layer = 96  # value is based on model selected.
 models_savename = "./models/xception"
 classnames  = pd.read_csv('your/path/...')
 
@@ -356,16 +352,6 @@ model.compile(loss='categorical_crossentropy', optimizer=Adam(lr=0.00025),
 
 
 
-#model.fit_generator(generator=train_gen,
-#                    steps_per_epoch=100,
-#                    verbose=1,
-#                    callbacks=callbacks,
-#                    validation_data=val_gen,
-#                    epochs=30,
-#                    validation_steps=40)
-#
-#
-
 
 #Here we use decreasing learning rate since it is proved recently to have better results
 
@@ -396,11 +382,10 @@ model.save('xception.h5')
 #function, but it is good habit to change it each time when using a new model(don't forget!)
 
 train_datagen = ImageDataGenerator(preprocessing_function=keras.applications.inception_v3.preprocess_input,
-                                   shear_range=0.2,
-                                   zoom_range=0.1,
                                    rotation_range=180.,
-                                   width_shift_range=0.2,
+                                   zoom_range=0.1,
                                    height_shift_range=0.2,
+                                   width_shift_range=0.1,
                                    horizontal_flip=True)
 
 train_gen = BsonGenerator(train_bson_file, train_images_df, train_offsets_df, 
@@ -512,11 +497,10 @@ from keras.applications.resnet50 import ResNet50
 
 
 train_datagen = ImageDataGenerator(preprocessing_function=keras.applications.resnet50.preprocess_input,
-                                   shear_range=0.2,
-                                   zoom_range=0.1,
                                    rotation_range=180.,
-                                   width_shift_range=0.2,
+                                   zoom_range=0.1,
                                    height_shift_range=0.2,
+                                   width_shift_range=0.1,
                                    horizontal_flip=True)
 
 train_gen = BsonGenerator(train_bson_file, train_images_df, train_offsets_df, 
@@ -615,7 +599,7 @@ test_datagen = ImageDataGenerator(preprocessing_function=keras.applications.xcep
 data = bson.decode_file_iter(open(test_path, "rb"))
 
 
-#mean methos
+#mean methods
 with tqdm(total=num_test_products) as pbar:
     for c, d in enumerate(data):
         product_id = d["_id"]
